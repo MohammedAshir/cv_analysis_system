@@ -1,4 +1,3 @@
- 
 # CV Analysis System
 
 ## Overview
@@ -29,8 +28,42 @@ To run the CV Analysis System, you need the following tools and libraries:
 ## Setup Instructions
 
 ### 1. Clone the Repository
+
 Clone this repository to your local machine:
-```bash
-git clone https://github.com/MohammedAshir/cv_analysis_system.git/
+
+git clone https://github.com/MohammedAshir/cv_analysis_system.git
 cd cv-analysis-system
+
+### 2. Create and Activate a Virtual Environment
+On Windows:
+
+python -m venv venv
+venv\Scripts\activate
+
+On macOS/Linux:
+
+python3 -m venv venv
+source venv/bin/activate
+
+### 3. Install Dependencies
+
+Install the required Python dependencies:
+
+pip install -r requirements.txt
+
+### 4. Set Up the Database
+
+Make sure you have PostgreSQL or SQLite set up. SQLite will automatically create the database.
+
+
+### 5. Running the Application
+
+python app.py
+
+### 6. Sample CVs
+
+Sample CVs are provided in the data/sample_cvs/ directory. You can add more sample files as needed. The system will process these files and extract data from them.
+
+### 7. Querying the System
+Once the server is running, open http://127.0.0.1:5000/ in your browser. Use the form to input a query, such as "What skills does this candidate have?". The system will return a structured analysis of the CV.
 
