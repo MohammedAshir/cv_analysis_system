@@ -1,4 +1,4 @@
-#!c:\users\ashas\cv_analysis_system\venv\scripts\python.exe
+#!C:\Users\ashas\cv_analysis_system\venv\Scripts\python.exe
 """Extract pdf structure in XML format"""
 import logging
 import os.path

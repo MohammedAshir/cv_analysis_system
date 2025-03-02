@@ -1,4 +1,4 @@
-#!c:\users\ashas\cv_analysis_system\venv\scripts\python.exe
+#!C:\Users\ashas\cv_analysis_system\venv\Scripts\python.exe
 """A command line tool for extracting text and images from PDF and
 output it to plain text, html, xml or tags."""
 import argparse
