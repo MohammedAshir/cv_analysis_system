@@ -1,5 +1,7 @@
 # CV Analysis System
 
+![image](https://github.com/user-attachments/assets/25b536c6-dfb4-49d9-9f0e-7d0d50848a59)
+
 ## Overview
 
 The CV Analysis System is designed to automate the extraction, analysis, and querying of data from CVs. The system can process multiple CV documents (PDF/Word), extract relevant information using OCR (Optical Character Recognition), and provide a chatbot interface for querying the extracted details. It also integrates with an LLM (Large Language Model) like OpenAI or Cohere for further analysis and provides structured outputs such as a summary, skills, missing details, and more.
