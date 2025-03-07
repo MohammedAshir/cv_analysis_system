@@ -2,7 +2,8 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify
 from processing.document_processor import process_document
 from processing.cv_parser import parse_cv
 from llm_integration import LLMAnalyzer
-from database import create_tables, store_candidate, store_analysis
+from database import create_tables, store_candidate, store_analysis, get_all_candidates, get_candidate_data
+import json
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -13,7 +14,8 @@ create_tables()
 # Route to home page
 @app.route('/')
 def home():
-    return render_template('index.html')
+    candidates = get_all_candidates()  # Fetch all candidates from DB
+    return render_template('index.html', candidates=candidates)
 
 # Route to process all CVs
 @app.route('/process_all')
@@ -52,17 +54,23 @@ def process_all():
 
     return redirect(url_for('home'))
 
-# Route to handle queries
+# Route to handle queries with candidate selection
 @app.route('/query', methods=['POST'])
 def query():
     query_text = request.form['query']
-    llm = LLMAnalyzer()
+    candidate_id = request.form.get('candidate_id')
 
-    # Handle user query via LLM (for now, just send structured data to LLM)
-    query_result = llm.analyze_cv({'query': query_text})  # Use LLM analysis for queries
+    if not candidate_id:
+        return render_template('index.html', query_result="Please select a candidate.", candidates=get_all_candidates())
+
+    candidate_data = get_candidate_data(candidate_id)
+    if not candidate_data:
+        return render_template('index.html', query_result="Candidate not found.", candidates=get_all_candidates())
+
+    llm = LLMAnalyzer()
+    query_result = llm.analyze_cv({'query': query_text, 'candidate_data': candidate_data})  
     
-    # Render result in HTML page
-    return render_template('index.html', query_result=query_result)
+    return render_template('index.html', query_result=query_result, candidates=get_all_candidates())
 
 # Run the app
 if __name__ == "__main__":

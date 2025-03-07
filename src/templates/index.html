@@ -17,13 +17,28 @@
     <section class="main-content">
         <div class="container">
             <form action="/query" method="POST">
+                
+                <!-- Candidate Selection -->
+                <div class="form-group">
+                    <label for="candidate_id">Select a Candidate:</label>
+                    <select id="candidate_id" name="candidate_id" required>
+                        <option value="">-- Choose a Candidate --</option>
+                        {% for candidate in candidates %}
+                            <option value="{{ candidate['id'] }}">{{ candidate['name'] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Query Input -->
                 <div class="form-group">
                     <label for="query">Enter your query:</label>
                     <textarea id="query" name="query" placeholder="Example: What skills does this candidate have?" required></textarea>
                 </div>
+                
                 <button type="submit" class="btn-submit">Analyze</button>
             </form>
 
+            <!-- Display Query Result -->
             {% if query_result %}
             <div class="result">
                 <h2>Query Result</h2>
