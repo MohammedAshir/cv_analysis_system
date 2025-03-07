@@ -1,6 +1,6 @@
 # CV Analysis System
 
-![image](https://github.com/user-attachments/assets/25b536c6-dfb4-49d9-9f0e-7d0d50848a59)
+![image](https://github.com/user-attachments/assets/8e944132-510f-4d43-babf-5281c4add727)
 
 ## Overview
 
