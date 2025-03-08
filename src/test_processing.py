@@ -15,24 +15,8 @@ def process_all_cvs(file_paths):
             # Extract text and parse it into structured data
             text = process_document(file_path)
             structured_data = parse_cv(text)
-
-            print(f"\nExtracted Data from: {file_path}")
+            # print(text)
             print(json.dumps(structured_data, indent=4))  
-
-            # Store extracted data in database
-            candidate_id = store_candidate(structured_data, text)
-
-            # Send structured data to LLM
-            llm_response = llm.analyze_cv(structured_data)
-            print("\n🔹 LLM Analysis Result:")
-            print(llm_response)
-
-            # Convert LLM response from JSON string to dictionary
-            try:
-                analysis_data = json.loads(llm_response)
-                store_analysis(candidate_id, analysis_data)  # Store LLM analysis
-            except json.JSONDecodeError:
-                print("Error: LLM response is not valid JSON.")
 
         except Exception as e:
             print(f"Error processing {file_path}: {e}")

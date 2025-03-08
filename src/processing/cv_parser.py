@@ -25,12 +25,28 @@ def extract_phone(text):
     return match.group(0) if match else "Not Found"
 
 def extract_name(text):
+    
+    text = text.strip().replace('\n', ' ')
+
     doc = nlp(text)
+
     for ent in doc.ents:
         if ent.label_ == "PERSON":
-            return ent.text
-    words = text.split()
-    return " ".join(words[:2]) if len(words) >= 2 else "Not Found"
+            name = " ".join(ent.text.strip().split()[:2])
+            if name.lower() not in ['flask', 'django', 'python', 'developer', 'fritsch']:
+                return name
+
+    name_match = re.search(r'\b[A-Z][a-z]+\s[A-Z][a-z]+\b', text)
+    if name_match:
+        name = name_match.group()
+        if name.lower() not in ['flask', 'django', 'python', 'developer', 'fritsch']:
+            return name
+
+    words = re.findall(r'\b[A-Z][a-z]+\b', text)
+    if len(words) >= 2:
+        return " ".join(words[:2])
+
+    return "Not Found"
 
 
 
@@ -57,7 +73,6 @@ def extract_education(text):
 
     # **Step 1: Extract Full Education Section**
     edu_match = re.search(r"(?i)education\n([\s\S]+?)(?:\n(?:SKILLS|WORK EXPERIENCE|PROJECTS|CERTIFICATIONS|SUMMARY)|\Z)", text)
-    
     if not edu_match:
         return [{"degree": "Not Found", "university": "Not Found", "duration": "Not Found"}]
     
@@ -66,55 +81,74 @@ def extract_education(text):
 
     degree, university, duration = "Not Found", "Not Found", "Not Found"
 
-    # **Step 2: Extract Duration (YYYY-YYYY or Month YYYY - Month YYYY)**
+    # **Step 2: Extract Duration (Flexible Pattern)**
     duration_pattern = r"\b(?:[A-Za-z]{3} \d{4} - [A-Za-z]{3} \d{4}|\d{4} - \d{4})\b"
-    duration_match = re.search(duration_pattern, edu_text)
+    for line in lines:
+        match = re.search(duration_pattern, line)
+        if match:
+            duration = match.group().strip()
+            break
     
-    if duration_match:
-        duration = duration_match.group(0).strip()
-
-    # **Step 3: Extract Degree (Handling Multi-line Degrees)**
+    # **Step 3: Extract Degree (Handling Multi-line and Symbols)**
     degree_pattern = r"(Bachelor|Master|B\.S\.|M\.S\.|B\.Tech|M\.Tech|Ph\.D)[^\n]*"
-    degree_match = re.search(degree_pattern, edu_text, re.IGNORECASE)
-    
-    if degree_match:
-        degree_index = edu_text.index(degree_match.group(0))  # Find index to handle multi-line degrees
-        degree = edu_text[degree_index:].split("\n")[0].strip()  # Start from this line
-        next_lines = edu_text.split("\n")[degree_index + 1:]  # Check next lines
-
-        for line in next_lines:
-            if not re.search(duration_pattern, line) and "University" not in line:
-                degree += " " + line.strip()  # Append next lines until we hit a date or university
-            else:
+    current_degree = []
+    for line in lines:
+        clean_line = re.sub(r"[@#]", "", line).strip()  # Remove artifacts like '@'
+        if re.search(degree_pattern, clean_line, re.IGNORECASE):
+            current_degree.append(clean_line)
+        elif current_degree and not re.search(duration_pattern, clean_line) and "University" not in clean_line and "Institute" not in clean_line:
+            current_degree.append(clean_line)
+        else:
+            if current_degree:
+                degree = " ".join(current_degree).strip()
                 break
-        degree = degree.strip()
 
-    # **Step 4: Extract University**
+    # **Step 4: Extract University using Spacy NLP (Enhanced Context)**
     doc = nlp(edu_text)
     universities = [ent.text.strip() for ent in doc.ents if ent.label_ == "ORG"]
 
+    # ✅ Smarter Filtering (Avoid "Digital, Inc.")
+    universities = [u for u in universities if "Digital, Inc." not in u]
+
     if universities:
         university = universities[0]
-    
-    # **Step 5: Handle case where degree, duration, and university are on the same line**
+
+    # **Step 5: Handle Same-Line Degree and Duration Cases**
     for line in lines:
         if degree in line and duration in line:
             possible_university = line.replace(degree, "").replace(duration, "").strip()
             if possible_university and possible_university != degree:
                 university = possible_university
+                break
 
-    # **Step 6: Fallback for university detection**
+    # **Step 6: Fallback for University Detection (Context Aware)**
     if university == "Not Found":
         for line in lines:
             if "University" in line or "Institute" in line or "College" in line:
                 university = line.strip()
                 break
 
-    return [{
+    # ✅ Handle Overlapping Degree/University Info
+    if degree in university:
+        university = university.replace(degree, "").strip()
+    
+    # ✅ Handle Duplicate Degree Entries
+    if degree.startswith("Master of Science") and "Master of Science" in university:
+        university = university.replace(degree, "").strip()
+
+    # ✅ Final Cleanup
+    degree = degree.replace("\n", " ").strip()
+    university = university.replace("\n", " ").strip()
+    duration = duration.replace("\n", " ").strip()
+
+    # **Step 7: Store Results**
+    education.append({
         "degree": degree,
         "university": university,
         "duration": duration
-    }]
+    })
+
+    return education
 
 def extract_skills_and_tools(text):
     skills = set()
@@ -190,12 +224,12 @@ def extract_projects(text):
 
 def parse_cv(text):
     return {
-        "name": extract_name(text),
-        "email": extract_email(text),
-        "phone": extract_phone(text),
+        # "name": extract_name(text),
+        # "email": extract_email(text),
+        # "phone": extract_phone(text),
         "education": extract_education(text),
-        "experience": extract_experience(text),
-        "skills": extract_skills_and_tools(text),
-        "projects": extract_projects(text),
-        "certifications": extract_certifications(text)
+        # "experience": extract_experience(text),
+        # "skills": extract_skills_and_tools(text),
+        # "projects": extract_projects(text),
+        # "certifications": extract_certifications(text)
     }
